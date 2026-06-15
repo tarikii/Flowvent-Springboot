@@ -1,6 +1,8 @@
 package com.event.Flowvent.service;
 
-import com.event.Flowvent.model.Event;
+import com.event.Flowvent.entity.Client;
+import com.event.Flowvent.entity.Event;
+import com.event.Flowvent.repository.ClientRepository;
 import com.event.Flowvent.repository.EventRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -10,9 +12,11 @@ import java.time.LocalDate;
 public class DataInitializer implements CommandLineRunner {
 
     private final EventRepository eventRepository;
+    private final ClientRepository clientRepository;
 
-    public DataInitializer(EventRepository eventRepository){
+    public DataInitializer(EventRepository eventRepository, ClientRepository clientRepository){
         this.eventRepository = eventRepository;
+        this.clientRepository = clientRepository;
     }
 
     @Override
@@ -35,6 +39,13 @@ public class DataInitializer implements CommandLineRunner {
             eventRepository.save(event2);
 
             System.out.println("¡Base de datos inicializada con DOS eventos!");
+        }
+
+        if (clientRepository.count() == 0) {
+            Client client1 = new Client();
+            client1.setEmail("example@gmail.com");
+            client1.setName("Federico");
+            clientRepository.save(client1);
         }
     }
 }

@@ -1,11 +1,9 @@
-package com.event.Flowvent.model;
+package com.event.Flowvent.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,4 +18,7 @@ public class Event {
     private LocalDate date;
     private Integer maximumCapacity;
     private Double ticketPrice;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private List<Ticket> tickets;
 }
