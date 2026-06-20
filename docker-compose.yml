@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: flowvent-postgres
+    environment:
+      POSTGRES_DB: flowvent
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tarikii
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowvent_postgres_data:/var/lib/postgresql/data
+volumes:
+  flowvent_postgres_data:

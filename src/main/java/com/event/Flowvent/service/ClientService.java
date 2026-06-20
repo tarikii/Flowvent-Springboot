@@ -3,6 +3,7 @@ package com.event.Flowvent.service;
 import com.event.Flowvent.dto.ClientCreateDto;
 import com.event.Flowvent.dto.ClientResponseDto;
 import com.event.Flowvent.entity.Client;
+import com.event.Flowvent.exception.ClientNotFoundException;
 import com.event.Flowvent.repository.ClientRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,23 +19,37 @@ public class ClientService {
         this.clientRepository = clientRepository;
     }
 
-    public Client createClient(ClientCreateDto dto) {
+    public Client findClientById(Long id){
+        return clientRepository.findById(id)
+                .orElseThrow(() -> new ClientNotFoundException(id));
+    }
+
+    public ClientResponseDto createClient(ClientCreateDto dto) {
         Client client = new Client();
         client.setName(dto.getName());
         client.setEmail(dto.getEmail());
-        return clientRepository.save(client);
+
+        Client saved = clientRepository.save(client);
+
+        return new ClientResponseDto(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail()
+        );
     }
 
     public ClientResponseDto updateClient(Long id, ClientCreateDto dto) {
-        Client existentClient = clientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Client not found with ID: " + id));
+        Client existentClient = findClientById(id);
 
         existentClient.setName(dto.getName());
         existentClient.setEmail(dto.getEmail());
 
         Client updatedClient = clientRepository.save(existentClient);
 
-        return new ClientResponseDto(updatedClient.getId(), updatedClient.getName(), updatedClient.getEmail());
+        return new ClientResponseDto(
+                updatedClient.getId(),
+                updatedClient.getName(),
+                updatedClient.getEmail());
     }
 
     public List<ClientResponseDto> listAllClients() {
@@ -47,10 +62,8 @@ public class ClientService {
                 .collect(Collectors.toList());
     }
 
-    public void deleteClient(Long id) {
-        if (!clientRepository.existsById(id)) {
-            throw new RuntimeException("Cannot delete. Client not found with ID: " + id);
-        }
-        clientRepository.deleteById(id);
+    public void deleteClient(Long id){
+        Client client = findClientById(id);
+        clientRepository.delete(client);
     }
 }

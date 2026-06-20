@@ -1,8 +1,11 @@
 package com.event.Flowvent.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class TicketUpdateDto {
-    private String seatNumber;
+
+    @Schema(example = "38")
+    private Integer seatNumber;
 }

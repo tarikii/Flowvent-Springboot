@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     long countByEventId(Long eventId);
-    boolean existsByEventIdAndSeatNumber(Long eventId, String seatNumber);
+    boolean existsByEventIdAndSeatNumber(Long eventId, Integer seatNumber);
 }

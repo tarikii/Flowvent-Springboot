@@ -1,5 +1,6 @@
 package com.event.Flowvent.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -7,10 +8,13 @@ import lombok.Data;
 public class TicketCreateDto {
 
     @NotNull(message = "The client must exist in the data base of the website.")
+    @Schema(example = "5")
     private Long clientId;
 
     @NotNull(message = "The event must exist in the data base of the website.")
+    @Schema(example = "3")
     private Long eventId;
 
-    private String seatNumber;
+    @Schema(example = "34")
+    private Integer seatNumber;
 }

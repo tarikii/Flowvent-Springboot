@@ -11,5 +11,5 @@ public class TicketResponseDto {
     private Long id;
     private String clientName;
     private String eventTitle;
-    private String seat;
+    private Integer seat;
 }

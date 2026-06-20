@@ -15,7 +15,7 @@ public class Ticket {
     private Long id;
 
     private LocalDateTime purchaseDate;
-    private String seatNumber;
+    private Integer seatNumber;
 
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)

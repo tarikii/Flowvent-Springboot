@@ -11,6 +11,12 @@ import com.event.Flowvent.repository.EventRepository;
 import com.event.Flowvent.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 
+import com.event.Flowvent.exception.ClientNotFoundException;
+import com.event.Flowvent.exception.EventNotFoundException;
+import com.event.Flowvent.exception.EventFullException;
+import com.event.Flowvent.exception.SeatAlreadyTakenException;
+import com.event.Flowvent.exception.TicketNotFoundException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,26 +33,27 @@ public class TicketService {
         this.eventRepository = eventRepository;
     }
 
+    public Ticket findTicketById(Long id) {
+        return ticketRepository.findById(id)
+                .orElseThrow(() -> new TicketNotFoundException(id));
+    }
+
     public TicketResponseDto buyTicket(TicketCreateDto dto) {
         Client client = clientRepository.findById(dto.getClientId())
-                .orElseThrow(() -> new RuntimeException("Client not found with ID: " + dto.getClientId()));
+                .orElseThrow(() -> new ClientNotFoundException(dto.getClientId()));
 
         Event event = eventRepository.findById(dto.getEventId())
-                .orElseThrow(() -> new RuntimeException("Event not found with ID: " + dto.getEventId()));
+                .orElseThrow(() -> new EventNotFoundException(dto.getEventId()));
 
         long soldTickets = ticketRepository.countByEventId(dto.getEventId());
         if (soldTickets >= event.getMaximumCapacity()) {
-            throw new RuntimeException("Tickets sold out! The event '" + event.getTitle() + "' is fully booked.");
+            throw new EventFullException(event.getId());
         }
 
-        String finalSeat = dto.getSeatNumber();
+        Integer finalSeat = dto.getSeatNumber();
 
-        if (finalSeat == null || finalSeat.trim().isEmpty()) {
-            finalSeat = "Seat " + (soldTickets + 1);
-        } else {
-            if (ticketRepository.existsByEventIdAndSeatNumber(dto.getEventId(), finalSeat)) {
-                throw new RuntimeException("The seat '" + finalSeat + "' is already occupied for this event.");
-            }
+        if (ticketRepository.existsByEventIdAndSeatNumber(dto.getEventId(), finalSeat)) {
+            throw new SeatAlreadyTakenException(finalSeat);
         }
 
         Ticket ticket = new Ticket();
@@ -65,8 +72,7 @@ public class TicketService {
     }
 
     public TicketResponseDto updateTicketSeat(Long id, TicketUpdateDto dto) {
-        Ticket existentTicket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + id));
+        Ticket existentTicket = findTicketById(id);
 
         if (ticketRepository.existsByEventIdAndSeatNumber(existentTicket.getEvent().getId(), dto.getSeatNumber())) {
             throw new RuntimeException("The seat '" + dto.getSeatNumber() + "' is already occupied for this event.");
@@ -95,9 +101,7 @@ public class TicketService {
     }
 
     public void deleteTicket(Long id) {
-        if (!ticketRepository.existsById(id)) {
-            throw new RuntimeException("Cannot delete. Ticket not found with ID: " + id);
-        }
-        ticketRepository.deleteById(id);
+        Ticket ticket = findTicketById(id);
+        ticketRepository.delete(ticket);
     }
 }
