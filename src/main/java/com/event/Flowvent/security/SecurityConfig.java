@@ -34,14 +34,20 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // EVENTS
                         .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
-
                         .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ADMIN")
 
+                        // CLIENTS
                         .requestMatchers("/api/clients/**").hasRole("ADMIN")
 
+                        // TICKETS - SPECIFIC ROUTES FIRST
+                        .requestMatchers(HttpMethod.GET, "/api/tickets/me").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/tickets/event/**").hasRole("ADMIN")
+
+                        // TICKETS - GENERAL ROUTES
                         .requestMatchers(HttpMethod.GET, "/api/tickets/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/tickets/**").hasAnyRole("CLIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/tickets/**").hasAnyRole("CLIENT", "ADMIN")

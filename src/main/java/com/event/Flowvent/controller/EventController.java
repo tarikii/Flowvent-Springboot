@@ -46,6 +46,16 @@ public class EventController {
         return ResponseEntity.ok(eventDto);
     }
 
+    @Operation(summary = "Get upcoming events")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upcoming events retrieved successfully")
+    })
+    @GetMapping("/upcoming")
+    public ResponseEntity<List<EventResponseDto>> getUpcomingEvents() {
+        List<EventResponseDto> events = eventService.listUpcomingEvents();
+        return ResponseEntity.ok(events);
+    }
+
     @Operation(summary = "Updates you an existent event")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Event updated successfully"),

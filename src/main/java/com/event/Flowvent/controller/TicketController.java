@@ -36,6 +36,29 @@ public class TicketController {
         return ResponseEntity.ok(tickets);
     }
 
+    @Operation(summary = "Get tickets owned by the authenticated client")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tickets retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "User not authenticated")
+    })
+    @GetMapping("/me")
+    public ResponseEntity<List<TicketResponseDto>> getMyTickets() {
+        List<TicketResponseDto> tickets = ticketService.listMyTickets();
+        return ResponseEntity.ok(tickets);
+    }
+
+    @Operation(summary = "Get tickets for a specific event")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tickets retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Event not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<List<TicketResponseDto>> getTicketsByEvent(@PathVariable Long eventId) {
+        List<TicketResponseDto> tickets = ticketService.listTicketsByEvent(eventId);
+        return ResponseEntity.ok(tickets);
+    }
+
     @Operation(summary = "Updates an existent ticket of a client")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ticket updated successfully"),

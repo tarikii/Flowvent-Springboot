@@ -7,6 +7,7 @@ import com.event.Flowvent.exception.EventNotFoundException;
 import com.event.Flowvent.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,19 @@ public class EventService {
 
     public List<EventResponseDto> listAllEvents() {
         return eventRepository.findAll().stream()
+                .map(event -> new EventResponseDto(
+                        event.getId(),
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getDate(),
+                        event.getMaximumCapacity(),
+                        event.getTicketPrice()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<EventResponseDto> listUpcomingEvents() {
+        return eventRepository.findByDateAfterOrderByDateAsc(LocalDate.now()).stream()
                 .map(event -> new EventResponseDto(
                         event.getId(),
                         event.getTitle(),

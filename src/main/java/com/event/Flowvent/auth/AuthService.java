@@ -28,11 +28,14 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+
+        Role role = request.getRole() != null ? request.getRole() : Role.CLIENT;
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.CLIENT)
+                .role(role)
                 .build();
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -41,12 +44,14 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        Client client = new Client();
-        client.setName(savedUser.getUsername());
-        client.setEmail(savedUser.getEmail());
-        client.setUser(savedUser);
+        if (role == Role.CLIENT) {
+            Client client = new Client();
+            client.setName(savedUser.getUsername());
+            client.setEmail(savedUser.getEmail());
+            client.setUser(savedUser);
 
-        clientRepository.save(client);
+            clientRepository.save(client);
+        }
 
         String token = jwtService.generateToken(savedUser.getEmail());
 

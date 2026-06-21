@@ -66,7 +66,9 @@ public class TicketService {
                 savedTicket.getId(),
                 savedTicket.getClient().getName(),
                 savedTicket.getEvent().getTitle(),
-                savedTicket.getSeatNumber()
+                savedTicket.getSeatNumber(),
+                savedTicket.getPurchaseDate(),
+                savedTicket.getEvent().getDate()
         );
     }
 
@@ -86,7 +88,9 @@ public class TicketService {
                 updatedTicket.getId(),
                 updatedTicket.getClient().getName(),
                 updatedTicket.getEvent().getTitle(),
-                updatedTicket.getSeatNumber()
+                updatedTicket.getSeatNumber(),
+                updatedTicket.getPurchaseDate(),
+                updatedTicket.getEvent().getDate()
         );
     }
 
@@ -96,7 +100,40 @@ public class TicketService {
                         ticket.getId(),
                         ticket.getClient().getName(),
                         ticket.getEvent().getTitle(),
-                        ticket.getSeatNumber()
+                        ticket.getSeatNumber(),
+                        ticket.getPurchaseDate(),
+                        ticket.getEvent().getDate()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<TicketResponseDto> listMyTickets() {
+        String authenticatedEmail = getAuthenticatedUserEmail();
+
+        return ticketRepository.findByClientUserEmailOrderByPurchaseDateDesc(authenticatedEmail).stream()
+                .map(ticket -> new TicketResponseDto(
+                        ticket.getId(),
+                        ticket.getClient().getName(),
+                        ticket.getEvent().getTitle(),
+                        ticket.getSeatNumber(),
+                        ticket.getPurchaseDate(),
+                        ticket.getEvent().getDate()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<TicketResponseDto> listTicketsByEvent(Long eventId) {
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
+
+        return ticketRepository.findByEventId(eventId).stream()
+                .map(ticket -> new TicketResponseDto(
+                        ticket.getId(),
+                        ticket.getClient().getName(),
+                        ticket.getEvent().getTitle(),
+                        ticket.getSeatNumber(),
+                        ticket.getPurchaseDate(),
+                        ticket.getEvent().getDate()
                 ))
                 .collect(Collectors.toList());
     }
