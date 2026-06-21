@@ -1,11 +1,13 @@
 package com.event.Flowvent.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class TicketUpdateDto {
 
-    @Schema(example = "38")
+    @NotNull(message = "Seat number is required")
+    @Min(value = 1, message = "Seat number must be at least 1")
     private Integer seatNumber;
 }

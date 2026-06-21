@@ -1,6 +1,5 @@
 package com.event.Flowvent.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,12 +8,11 @@ import lombok.Data;
 @Data
 public class ClientCreateDto {
 
-    @NotBlank(message = "The name of the client cannot be empty.")
-    @Schema(example = "Nick Drake")
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
 
-    @NotBlank(message = "The email cannot be blank.")
-    @Email(message = "Not a valid email.")
-    @Schema(example = "example@gmail.com")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
 }

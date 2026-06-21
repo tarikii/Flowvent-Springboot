@@ -37,17 +37,6 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
-    @Operation(summary = "Gets you a specific existent event by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Event found"),
-            @ApiResponse(responseCode = "404", description = "Event not found")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<EventResponseDto> getEventById(@PathVariable Long id) {
-        EventResponseDto eventDto = eventService.getEventById(id);
-        return ResponseEntity.ok(eventDto);
-    }
-
     @Operation(summary = "Get upcoming events")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Upcoming events retrieved successfully")
@@ -56,18 +45,6 @@ public class EventController {
     public ResponseEntity<List<EventResponseDto>> getUpcomingEvents() {
         List<EventResponseDto> events = eventService.listUpcomingEvents();
         return ResponseEntity.ok(events);
-    }
-
-    @Operation(summary = "Updates you an existent event")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Event updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Event not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid request data")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<EventResponseDto> updateEvent(@PathVariable Long id, @Valid @RequestBody EventCreateDto dto) {
-        EventResponseDto updatedEvent = eventService.updateEvent(id, dto);
-        return ResponseEntity.ok(updatedEvent);
     }
 
     @Operation(summary = "Search events using optional filters")
@@ -101,6 +78,17 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
+    @Operation(summary = "Get a specific event by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Event found"),
+            @ApiResponse(responseCode = "404", description = "Event not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<EventResponseDto> getEventById(@PathVariable Long id) {
+        EventResponseDto eventDto = eventService.getEventById(id);
+        return ResponseEntity.ok(eventDto);
+    }
+
     @Operation(summary = "Creates a new event")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Event created successfully"),
@@ -112,10 +100,25 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newEvent);
     }
 
-    @Operation(summary = "Deletes an existent event")
+    @Operation(summary = "Updates an existing event")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Event updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Event not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<EventResponseDto> updateEvent(
+            @PathVariable Long id,
+            @Valid @RequestBody EventCreateDto dto
+    ) {
+        EventResponseDto updatedEvent = eventService.updateEvent(id, dto);
+        return ResponseEntity.ok(updatedEvent);
+    }
+
+    @Operation(summary = "Deletes an existing event")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Event deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Event not found"),
+            @ApiResponse(responseCode = "404", description = "Event not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {

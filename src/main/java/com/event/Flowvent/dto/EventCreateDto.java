@@ -1,7 +1,11 @@
 package com.event.Flowvent.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -9,25 +13,23 @@ import java.time.LocalDate;
 @Data
 public class EventCreateDto {
 
-    @NotBlank(message = "The name of the event cannot be blank.")
-    @Schema(example = "The Strokes Concert")
+    @NotBlank(message = "Title is required")
+    @Size(max = 100, message = "Title must not exceed 100 characters")
     private String title;
 
-    @NotBlank(message = "The event cannot have a blank description.")
-    @Schema(example = "Come enjoy the incredible songs of this band!")
+    @NotBlank(message = "Description is required")
+    @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
-    @NotNull(message = "The event date cannot be empty.")
-    @Schema(example = "31/05/2029")
+    @NotNull(message = "Event date is required")
+    @Future(message = "Event date must be in the future")
     private LocalDate date;
 
-    @NotNull(message = "Capacity of the event must have a number of at least 50.")
-    @Min(value = 50, message = "Capacity of the event must have a number of at least 50.")
-    @Schema(example = "100")
+    @NotNull(message = "Maximum capacity is required")
+    @Min(value = 1, message = "Maximum capacity must be at least 1")
     private Integer maximumCapacity;
 
-    @NotNull(message = "The price of the ticket cannot be empty.")
-    @Positive(message = "The price of the ticket must be above zero.")
-    @Schema(example = "45,67")
+    @NotNull(message = "Ticket price is required")
+    @PositiveOrZero(message = "Ticket price cannot be negative")
     private Double ticketPrice;
 }
