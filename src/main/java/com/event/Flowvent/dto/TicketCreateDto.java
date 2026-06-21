@@ -7,10 +7,6 @@ import lombok.Data;
 @Data
 public class TicketCreateDto {
 
-    @NotNull(message = "The client must exist in the data base of the website.")
-    @Schema(example = "5")
-    private Long clientId;
-
     @NotNull(message = "The event must exist in the data base of the website.")
     @Schema(example = "3")
     private Long eventId;

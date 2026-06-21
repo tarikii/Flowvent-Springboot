@@ -1,5 +1,7 @@
 package com.event.Flowvent.auth;
 
+import com.event.Flowvent.entity.Client;
+import com.event.Flowvent.repository.ClientRepository;
 import com.event.Flowvent.security.JwtService;
 import com.event.Flowvent.user.Role;
 import com.event.Flowvent.user.User;
@@ -13,11 +15,14 @@ import com.event.Flowvent.exception.InvalidCredentialsException;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, ClientRepository clientRepository,
+                       PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.clientRepository = clientRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -34,9 +39,16 @@ public class AuthService {
             throw new EmailAlreadyExistsException(request.getEmail());
         }
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getEmail());
+        Client client = new Client();
+        client.setName(savedUser.getUsername());
+        client.setEmail(savedUser.getEmail());
+        client.setUser(savedUser);
+
+        clientRepository.save(client);
+
+        String token = jwtService.generateToken(savedUser.getEmail());
 
         return new AuthResponse(token);
     }

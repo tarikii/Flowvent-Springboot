@@ -2,6 +2,7 @@ package com.event.Flowvent.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -33,9 +34,20 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/events/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
 
-                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ADMIN")
+
+                        .requestMatchers("/api/clients/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/tickets/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/tickets/**").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/tickets/**").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/tickets/**").hasAnyRole("CLIENT", "ADMIN")
+
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

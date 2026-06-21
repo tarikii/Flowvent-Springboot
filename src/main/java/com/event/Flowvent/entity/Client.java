@@ -1,5 +1,6 @@
 package com.event.Flowvent.entity;
 
+import com.event.Flowvent.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -22,6 +23,10 @@ public class Client {
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("client")
     private List<Ticket> tickets;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
     public Client() {}
 

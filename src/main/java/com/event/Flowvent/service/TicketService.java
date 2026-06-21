@@ -6,18 +6,15 @@ import com.event.Flowvent.dto.TicketUpdateDto;
 import com.event.Flowvent.entity.Client;
 import com.event.Flowvent.entity.Event;
 import com.event.Flowvent.entity.Ticket;
+import com.event.Flowvent.exception.*;
 import com.event.Flowvent.repository.ClientRepository;
 import com.event.Flowvent.repository.EventRepository;
 import com.event.Flowvent.repository.TicketRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.event.Flowvent.exception.ClientNotFoundException;
-import com.event.Flowvent.exception.EventNotFoundException;
-import com.event.Flowvent.exception.EventFullException;
-import com.event.Flowvent.exception.SeatAlreadyTakenException;
-import com.event.Flowvent.exception.TicketNotFoundException;
-
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,8 +36,10 @@ public class TicketService {
     }
 
     public TicketResponseDto buyTicket(TicketCreateDto dto) {
-        Client client = clientRepository.findById(dto.getClientId())
-                .orElseThrow(() -> new ClientNotFoundException(dto.getClientId()));
+        String authenticatedEmail = getAuthenticatedUserEmail();
+
+        Client client = clientRepository.findByUserEmail(authenticatedEmail)
+                .orElseThrow(() -> new ClientProfileNotFoundException(authenticatedEmail));
 
         Event event = eventRepository.findById(dto.getEventId())
                 .orElseThrow(() -> new EventNotFoundException(dto.getEventId()));
@@ -74,8 +73,10 @@ public class TicketService {
     public TicketResponseDto updateTicketSeat(Long id, TicketUpdateDto dto) {
         Ticket existentTicket = findTicketById(id);
 
+        validateTicketOwnership(existentTicket);
+
         if (ticketRepository.existsByEventIdAndSeatNumber(existentTicket.getEvent().getId(), dto.getSeatNumber())) {
-            throw new RuntimeException("The seat '" + dto.getSeatNumber() + "' is already occupied for this event.");
+            throw new SeatAlreadyTakenException(dto.getSeatNumber());
         }
 
         existentTicket.setSeatNumber(dto.getSeatNumber());
@@ -102,6 +103,34 @@ public class TicketService {
 
     public void deleteTicket(Long id) {
         Ticket ticket = findTicketById(id);
+        validateTicketOwnership(ticket);
+
         ticketRepository.delete(ticket);
+    }
+
+    private String getAuthenticatedUserEmail() {
+        return Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+    }
+
+    private void validateTicketOwnership(Ticket ticket) {
+        String authenticatedEmail = getAuthenticatedUserEmail();
+
+        boolean isOwner = ticket.getClient()
+                .getEmail()
+                .equals(authenticatedEmail);
+
+        boolean isAdmin = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getAuthorities()
+                .stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException();
+        }
     }
 }
