@@ -5,11 +5,15 @@ import com.event.Flowvent.dto.EventResponseDto;
 import com.event.Flowvent.entity.Event;
 import com.event.Flowvent.exception.EventNotFoundException;
 import com.event.Flowvent.repository.EventRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+
 
 @Service
 public class EventService {
@@ -22,14 +26,7 @@ public class EventService {
 
     public List<EventResponseDto> listAllEvents() {
         return eventRepository.findAll().stream()
-                .map(event -> new EventResponseDto(
-                        event.getId(),
-                        event.getTitle(),
-                        event.getDescription(),
-                        event.getDate(),
-                        event.getMaximumCapacity(),
-                        event.getTicketPrice()
-                ))
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -109,5 +106,76 @@ public class EventService {
                 .orElseThrow(() -> new EventNotFoundException(id));
 
         eventRepository.delete(event);
+    }
+
+    private EventResponseDto mapToResponseDto(Event event) {
+        return new EventResponseDto(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                event.getMaximumCapacity(),
+                event.getTicketPrice()
+        );
+    }
+
+    public List<EventResponseDto> searchEvents(
+            String title,
+            LocalDate fromDate,
+            LocalDate toDate,
+            Double minPrice,
+            Double maxPrice
+    ) {
+        Specification<Event> spec = (root, query, criteriaBuilder) ->
+                criteriaBuilder.conjunction();
+
+        if (title != null && !title.isBlank()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("title")),
+                            "%" + title.toLowerCase() + "%"
+                    )
+            );
+        }
+
+        if (fromDate != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.greaterThanOrEqualTo(
+                            root.<LocalDate>get("date"),
+                            fromDate
+                    )
+            );
+        }
+
+        if (toDate != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.lessThanOrEqualTo(
+                            root.<LocalDate>get("date"),
+                            toDate
+                    )
+            );
+        }
+
+        if (minPrice != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.greaterThanOrEqualTo(
+                            root.<Double>get("ticketPrice"),
+                            minPrice
+                    )
+            );
+        }
+
+        if (maxPrice != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.lessThanOrEqualTo(
+                            root.<Double>get("ticketPrice"),
+                            maxPrice
+                    )
+            );
+        }
+
+        return eventRepository.findAll(spec, Sort.by(Sort.Direction.ASC, "date")).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
     }
 }

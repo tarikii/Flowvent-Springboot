@@ -8,10 +8,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Events", description = "Operations related to event management")
@@ -66,6 +68,37 @@ public class EventController {
     public ResponseEntity<EventResponseDto> updateEvent(@PathVariable Long id, @Valid @RequestBody EventCreateDto dto) {
         EventResponseDto updatedEvent = eventService.updateEvent(id, dto);
         return ResponseEntity.ok(updatedEvent);
+    }
+
+    @Operation(summary = "Search events using optional filters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Events retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid filter format")
+    })
+    @GetMapping("/search")
+    public ResponseEntity<List<EventResponseDto>> searchEvents(
+            @RequestParam(required = false) String title,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fromDate,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate toDate,
+
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        List<EventResponseDto> events = eventService.searchEvents(
+                title,
+                fromDate,
+                toDate,
+                minPrice,
+                maxPrice
+        );
+
+        return ResponseEntity.ok(events);
     }
 
     @Operation(summary = "Creates a new event")
