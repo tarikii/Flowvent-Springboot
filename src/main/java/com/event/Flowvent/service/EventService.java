@@ -6,9 +6,10 @@ import com.event.Flowvent.entity.Event;
 import com.event.Flowvent.exception.EventNotFoundException;
 import com.event.Flowvent.repository.EventRepository;
 import com.event.Flowvent.repository.TicketRepository;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,16 +26,14 @@ public class EventService {
         this.ticketRepository = ticketRepository;
     }
 
-    public List<EventResponseDto> listAllEvents() {
-        return eventRepository.findAll().stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+    public Page<EventResponseDto> listAllEvents(Pageable pageable) {
+        return eventRepository.findAll(pageable)
+                .map(this::mapToResponseDto);
     }
 
-    public List<EventResponseDto> listUpcomingEvents() {
-        return eventRepository.findByDateAfterOrderByDateAsc(LocalDate.now()).stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+    public Page<EventResponseDto> listUpcomingEvents(Pageable pageable) {
+        return eventRepository.findByDateAfter(LocalDate.now(), pageable)
+                .map(this::mapToResponseDto);
     }
 
     public EventResponseDto saveEvent(EventCreateDto dto) {
@@ -79,12 +78,13 @@ public class EventService {
         eventRepository.delete(event);
     }
 
-    public List<EventResponseDto> searchEvents(
+    public Page<EventResponseDto> searchEvents(
             String title,
             LocalDate fromDate,
             LocalDate toDate,
             Double minPrice,
-            Double maxPrice
+            Double maxPrice,
+            Pageable pageable
     ) {
         Specification<Event> spec = (root, query, criteriaBuilder) ->
                 criteriaBuilder.conjunction();
@@ -134,9 +134,8 @@ public class EventService {
             );
         }
 
-        return eventRepository.findAll(spec, Sort.by(Sort.Direction.ASC, "date")).stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+        return eventRepository.findAll(spec, pageable)
+                .map(this::mapToResponseDto);
     }
 
     private EventResponseDto mapToResponseDto(Event event) {

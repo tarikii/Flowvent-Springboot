@@ -12,6 +12,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,8 +36,11 @@ public class EventController {
             @ApiResponse(responseCode = "200", description = "Events found")
     })
     @GetMapping
-    public ResponseEntity<List<EventResponseDto>> getAllEvents() {
-        List<EventResponseDto> events = eventService.listAllEvents();
+    public ResponseEntity<Page<EventResponseDto>> getAllEvents(
+            @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        Page<EventResponseDto> events = eventService.listAllEvents(pageable);
         return ResponseEntity.ok(events);
     }
 
@@ -42,8 +49,11 @@ public class EventController {
             @ApiResponse(responseCode = "200", description = "Upcoming events retrieved successfully")
     })
     @GetMapping("/upcoming")
-    public ResponseEntity<List<EventResponseDto>> getUpcomingEvents() {
-        List<EventResponseDto> events = eventService.listUpcomingEvents();
+    public ResponseEntity<Page<EventResponseDto>> getUpcomingEvents(
+            @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        Page<EventResponseDto> events = eventService.listUpcomingEvents(pageable);
         return ResponseEntity.ok(events);
     }
 
@@ -53,7 +63,7 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid filter format")
     })
     @GetMapping("/search")
-    public ResponseEntity<List<EventResponseDto>> searchEvents(
+    public ResponseEntity<Page<EventResponseDto>> searchEvents(
             @RequestParam(required = false) String title,
 
             @RequestParam(required = false)
@@ -65,14 +75,18 @@ public class EventController {
             LocalDate toDate,
 
             @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice
+            @RequestParam(required = false) Double maxPrice,
+
+            @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.ASC)
+            Pageable pageable
     ) {
-        List<EventResponseDto> events = eventService.searchEvents(
+        Page<EventResponseDto> events = eventService.searchEvents(
                 title,
                 fromDate,
                 toDate,
                 minPrice,
-                maxPrice
+                maxPrice,
+                pageable
         );
 
         return ResponseEntity.ok(events);

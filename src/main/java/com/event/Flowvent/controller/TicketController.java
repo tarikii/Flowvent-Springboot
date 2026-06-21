@@ -12,6 +12,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -31,8 +35,11 @@ public class TicketController {
             @ApiResponse(responseCode = "200", description = "Tickets found")
     })
     @GetMapping
-    public ResponseEntity<List<TicketResponseDto>> getAllTickets() {
-        List<TicketResponseDto> tickets = ticketService.listAllTickets();
+    public ResponseEntity<Page<TicketResponseDto>> getAllTickets(
+            @PageableDefault(size = 10, sort = "purchaseDate", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        Page<TicketResponseDto> tickets = ticketService.listAllTickets(pageable);
         return ResponseEntity.ok(tickets);
     }
 
@@ -42,8 +49,11 @@ public class TicketController {
             @ApiResponse(responseCode = "401", description = "User not authenticated")
     })
     @GetMapping("/me")
-    public ResponseEntity<List<TicketResponseDto>> getMyTickets() {
-        List<TicketResponseDto> tickets = ticketService.listMyTickets();
+    public ResponseEntity<Page<TicketResponseDto>> getMyTickets(
+            @PageableDefault(size = 10, sort = "purchaseDate", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        Page<TicketResponseDto> tickets = ticketService.listMyTickets(pageable);
         return ResponseEntity.ok(tickets);
     }
 
@@ -54,8 +64,12 @@ public class TicketController {
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/event/{eventId}")
-    public ResponseEntity<List<TicketResponseDto>> getTicketsByEvent(@PathVariable Long eventId) {
-        List<TicketResponseDto> tickets = ticketService.listTicketsByEvent(eventId);
+    public ResponseEntity<Page<TicketResponseDto>> getTicketsByEvent(
+            @PathVariable Long eventId,
+            @PageableDefault(size = 10, sort = "purchaseDate", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        Page<TicketResponseDto> tickets = ticketService.listTicketsByEvent(eventId, pageable);
         return ResponseEntity.ok(tickets);
     }
 

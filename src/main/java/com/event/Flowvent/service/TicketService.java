@@ -12,7 +12,10 @@ import com.event.Flowvent.repository.EventRepository;
 import com.event.Flowvent.repository.TicketRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +51,10 @@ public class TicketService {
 
         Event event = eventRepository.findById(dto.getEventId())
                 .orElseThrow(() -> new EventNotFoundException(dto.getEventId()));
+
+        if (event.getDate().isBefore(LocalDate.now())) {
+            throw new EventAlreadyPassedException(event.getId());
+        }
 
         long soldTickets = ticketRepository.countByEventId(event.getId());
 
@@ -91,27 +98,24 @@ public class TicketService {
         return mapToResponseDto(updatedTicket);
     }
 
-    public List<TicketResponseDto> listAllTickets() {
-        return ticketRepository.findAll().stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+    public Page<TicketResponseDto> listAllTickets(Pageable pageable) {
+        return ticketRepository.findAll(pageable)
+                .map(this::mapToResponseDto);
     }
 
-    public List<TicketResponseDto> listMyTickets() {
+    public Page<TicketResponseDto> listMyTickets(Pageable pageable) {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
-        return ticketRepository.findByClientUserEmailOrderByPurchaseDateDesc(authenticatedEmail).stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+        return ticketRepository.findByClientUserEmail(authenticatedEmail, pageable)
+                .map(this::mapToResponseDto);
     }
 
-    public List<TicketResponseDto> listTicketsByEvent(Long eventId) {
+    public Page<TicketResponseDto> listTicketsByEvent(Long eventId, Pageable pageable) {
         eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
-        return ticketRepository.findByEventId(eventId).stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+        return ticketRepository.findByEventId(eventId, pageable)
+                .map(this::mapToResponseDto);
     }
 
     public void deleteTicket(Long id) {
