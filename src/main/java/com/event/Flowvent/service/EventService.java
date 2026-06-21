@@ -5,23 +5,24 @@ import com.event.Flowvent.dto.EventResponseDto;
 import com.event.Flowvent.entity.Event;
 import com.event.Flowvent.exception.EventNotFoundException;
 import com.event.Flowvent.repository.EventRepository;
+import com.event.Flowvent.repository.TicketRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-
-
 
 @Service
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final TicketRepository ticketRepository;
 
-    public EventService(EventRepository eventRepository){
+    public EventService(EventRepository eventRepository, TicketRepository ticketRepository) {
         this.eventRepository = eventRepository;
+        this.ticketRepository = ticketRepository;
     }
 
     public List<EventResponseDto> listAllEvents() {
@@ -32,18 +33,11 @@ public class EventService {
 
     public List<EventResponseDto> listUpcomingEvents() {
         return eventRepository.findByDateAfterOrderByDateAsc(LocalDate.now()).stream()
-                .map(event -> new EventResponseDto(
-                        event.getId(),
-                        event.getTitle(),
-                        event.getDescription(),
-                        event.getDate(),
-                        event.getMaximumCapacity(),
-                        event.getTicketPrice()
-                ))
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public EventResponseDto saveEvent(EventCreateDto dto){
+    public EventResponseDto saveEvent(EventCreateDto dto) {
         Event event = new Event();
         event.setTitle(dto.getTitle());
         event.setDescription(dto.getDescription());
@@ -53,34 +47,20 @@ public class EventService {
 
         Event savedEvent = eventRepository.save(event);
 
-        return new EventResponseDto(
-                savedEvent.getId(),
-                savedEvent.getTitle(),
-                savedEvent.getDescription(),
-                savedEvent.getDate(),
-                savedEvent.getMaximumCapacity(),
-                savedEvent.getTicketPrice()
-        );
+        return mapToResponseDto(savedEvent);
     }
 
-    public Event findEventById(Long id){
+    public Event findEventById(Long id) {
         return eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException(id));
     }
 
     public EventResponseDto getEventById(Long id) {
         Event event = findEventById(id);
-        return new EventResponseDto(
-                event.getId(),
-                event.getTitle(),
-                event.getDescription(),
-                event.getDate(),
-                event.getMaximumCapacity(),
-                event.getTicketPrice()
-        );
+        return mapToResponseDto(event);
     }
 
-    public EventResponseDto updateEvent(Long id, EventCreateDto dto){
+    public EventResponseDto updateEvent(Long id, EventCreateDto dto) {
         Event existentEvent = findEventById(id);
 
         existentEvent.setTitle(dto.getTitle());
@@ -91,32 +71,12 @@ public class EventService {
 
         Event updatedEvent = eventRepository.save(existentEvent);
 
-        return new EventResponseDto(
-                updatedEvent.getId(),
-                updatedEvent.getTitle(),
-                updatedEvent.getDescription(),
-                updatedEvent.getDate(),
-                updatedEvent.getMaximumCapacity(),
-                updatedEvent.getTicketPrice()
-        );
+        return mapToResponseDto(updatedEvent);
     }
 
-    public void deleteEvent(Long id){
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new EventNotFoundException(id));
-
+    public void deleteEvent(Long id) {
+        Event event = findEventById(id);
         eventRepository.delete(event);
-    }
-
-    private EventResponseDto mapToResponseDto(Event event) {
-        return new EventResponseDto(
-                event.getId(),
-                event.getTitle(),
-                event.getDescription(),
-                event.getDate(),
-                event.getMaximumCapacity(),
-                event.getTicketPrice()
-        );
     }
 
     public List<EventResponseDto> searchEvents(
@@ -177,5 +137,21 @@ public class EventService {
         return eventRepository.findAll(spec, Sort.by(Sort.Direction.ASC, "date")).stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    private EventResponseDto mapToResponseDto(Event event) {
+        long soldTickets = ticketRepository.countByEventId(event.getId());
+        long availableTickets = Math.max(0L, event.getMaximumCapacity() - soldTickets);
+
+        return new EventResponseDto(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                event.getMaximumCapacity(),
+                event.getTicketPrice(),
+                soldTickets,
+                availableTickets
+        );
     }
 }

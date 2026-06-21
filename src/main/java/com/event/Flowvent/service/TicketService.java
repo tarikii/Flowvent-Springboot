@@ -13,6 +13,7 @@ import com.event.Flowvent.repository.TicketRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,7 +25,11 @@ public class TicketService {
     private final ClientRepository clientRepository;
     private final EventRepository eventRepository;
 
-    public TicketService(TicketRepository ticketRepository, ClientRepository clientRepository, EventRepository eventRepository) {
+    public TicketService(
+            TicketRepository ticketRepository,
+            ClientRepository clientRepository,
+            EventRepository eventRepository
+    ) {
         this.ticketRepository = ticketRepository;
         this.clientRepository = clientRepository;
         this.eventRepository = eventRepository;
@@ -44,14 +49,15 @@ public class TicketService {
         Event event = eventRepository.findById(dto.getEventId())
                 .orElseThrow(() -> new EventNotFoundException(dto.getEventId()));
 
-        long soldTickets = ticketRepository.countByEventId(dto.getEventId());
+        long soldTickets = ticketRepository.countByEventId(event.getId());
+
         if (soldTickets >= event.getMaximumCapacity()) {
             throw new EventFullException(event.getId());
         }
 
         Integer finalSeat = dto.getSeatNumber();
 
-        if (ticketRepository.existsByEventIdAndSeatNumber(dto.getEventId(), finalSeat)) {
+        if (ticketRepository.existsByEventIdAndSeatNumber(event.getId(), finalSeat)) {
             throw new SeatAlreadyTakenException(finalSeat);
         }
 
@@ -59,17 +65,11 @@ public class TicketService {
         ticket.setClient(client);
         ticket.setEvent(event);
         ticket.setSeatNumber(finalSeat);
+        ticket.setPurchaseDate(LocalDateTime.now());
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        return new TicketResponseDto(
-                savedTicket.getId(),
-                savedTicket.getClient().getName(),
-                savedTicket.getEvent().getTitle(),
-                savedTicket.getSeatNumber(),
-                savedTicket.getPurchaseDate(),
-                savedTicket.getEvent().getDate()
-        );
+        return mapToResponseDto(savedTicket);
     }
 
     public TicketResponseDto updateTicketSeat(Long id, TicketUpdateDto dto) {
@@ -77,33 +77,23 @@ public class TicketService {
 
         validateTicketOwnership(existentTicket);
 
-        if (ticketRepository.existsByEventIdAndSeatNumber(existentTicket.getEvent().getId(), dto.getSeatNumber())) {
+        if (ticketRepository.existsByEventIdAndSeatNumber(
+                existentTicket.getEvent().getId(),
+                dto.getSeatNumber()
+        )) {
             throw new SeatAlreadyTakenException(dto.getSeatNumber());
         }
 
         existentTicket.setSeatNumber(dto.getSeatNumber());
+
         Ticket updatedTicket = ticketRepository.save(existentTicket);
 
-        return new TicketResponseDto(
-                updatedTicket.getId(),
-                updatedTicket.getClient().getName(),
-                updatedTicket.getEvent().getTitle(),
-                updatedTicket.getSeatNumber(),
-                updatedTicket.getPurchaseDate(),
-                updatedTicket.getEvent().getDate()
-        );
+        return mapToResponseDto(updatedTicket);
     }
 
     public List<TicketResponseDto> listAllTickets() {
         return ticketRepository.findAll().stream()
-                .map(ticket -> new TicketResponseDto(
-                        ticket.getId(),
-                        ticket.getClient().getName(),
-                        ticket.getEvent().getTitle(),
-                        ticket.getSeatNumber(),
-                        ticket.getPurchaseDate(),
-                        ticket.getEvent().getDate()
-                ))
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -111,14 +101,7 @@ public class TicketService {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
         return ticketRepository.findByClientUserEmailOrderByPurchaseDateDesc(authenticatedEmail).stream()
-                .map(ticket -> new TicketResponseDto(
-                        ticket.getId(),
-                        ticket.getClient().getName(),
-                        ticket.getEvent().getTitle(),
-                        ticket.getSeatNumber(),
-                        ticket.getPurchaseDate(),
-                        ticket.getEvent().getDate()
-                ))
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -127,22 +110,34 @@ public class TicketService {
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
         return ticketRepository.findByEventId(eventId).stream()
-                .map(ticket -> new TicketResponseDto(
-                        ticket.getId(),
-                        ticket.getClient().getName(),
-                        ticket.getEvent().getTitle(),
-                        ticket.getSeatNumber(),
-                        ticket.getPurchaseDate(),
-                        ticket.getEvent().getDate()
-                ))
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public void deleteTicket(Long id) {
         Ticket ticket = findTicketById(id);
+
         validateTicketOwnership(ticket);
 
         ticketRepository.delete(ticket);
+    }
+
+    private TicketResponseDto mapToResponseDto(Ticket ticket) {
+        return new TicketResponseDto(
+                ticket.getId(),
+
+                ticket.getClient().getName(),
+                ticket.getClient().getEmail(),
+
+                ticket.getEvent().getId(),
+                ticket.getEvent().getTitle(),
+                ticket.getEvent().getDate(),
+
+                ticket.getSeatNumber(),
+                ticket.getEvent().getTicketPrice(),
+
+                ticket.getPurchaseDate()
+        );
     }
 
     private String getAuthenticatedUserEmail() {

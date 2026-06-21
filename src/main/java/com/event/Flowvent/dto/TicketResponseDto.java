@@ -11,10 +11,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketResponseDto {
+
     private Long id;
+
     private String clientName;
+    private String clientEmail;
+
+    private Long eventId;
     private String eventTitle;
-    private Integer seat;
-    private LocalDateTime purchaseDate;
     private LocalDate eventDate;
+
+    private Integer seat;
+    private Double ticketPrice;
+
+    private LocalDateTime purchaseDate;
 }

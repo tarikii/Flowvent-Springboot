@@ -16,4 +16,6 @@ public class EventResponseDto {
     private LocalDate date;
     private Integer maximumCapacity;
     private Double ticketPrice;
+    private Long soldTickets;
+    private Long availableTickets;
 }
