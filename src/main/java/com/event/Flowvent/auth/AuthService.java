@@ -10,6 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.event.Flowvent.exception.EmailAlreadyExistsException;
 import com.event.Flowvent.exception.InvalidCredentialsException;
+import com.event.Flowvent.user.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Objects;
 
 @Service
 public class AuthService {
@@ -69,5 +73,22 @@ public class AuthService {
         String token = jwtService.generateToken(user.getEmail());
 
         return new AuthResponse(token);
+    }
+
+    public AuthUserResponseDto getAuthenticatedUser() {
+        String email = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        return new AuthUserResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 }
