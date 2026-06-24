@@ -8,7 +8,15 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "tickets")
+@Table(
+        name = "tickets",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_ticket_event_seat",
+                        columnNames = {"event_id", "seat_number"}
+                )
+        }
+)
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

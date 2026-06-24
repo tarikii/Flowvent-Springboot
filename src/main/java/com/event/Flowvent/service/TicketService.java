@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(id));
     }
 
+    @Transactional
     public TicketResponseDto buyTicket(TicketCreateDto dto) {
         String authenticatedEmail = getAuthenticatedUserEmail();
 
@@ -79,19 +81,25 @@ public class TicketService {
         return mapToResponseDto(savedTicket);
     }
 
+    @Transactional
     public TicketResponseDto updateTicketSeat(Long id, TicketUpdateDto dto) {
         Ticket existentTicket = findTicketById(id);
 
         validateTicketOwnership(existentTicket);
 
-        if (ticketRepository.existsByEventIdAndSeatNumber(
+        Integer currentSeat = existentTicket.getSeatNumber();
+        Integer newSeat = dto.getSeatNumber();
+
+        boolean seatChanged = !currentSeat.equals(newSeat);
+
+        if (seatChanged && ticketRepository.existsByEventIdAndSeatNumber(
                 existentTicket.getEvent().getId(),
-                dto.getSeatNumber()
+                newSeat
         )) {
-            throw new SeatAlreadyTakenException(dto.getSeatNumber());
+            throw new SeatAlreadyTakenException(newSeat);
         }
 
-        existentTicket.setSeatNumber(dto.getSeatNumber());
+        existentTicket.setSeatNumber(newSeat);
 
         Ticket updatedTicket = ticketRepository.save(existentTicket);
 

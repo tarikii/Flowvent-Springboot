@@ -1,5 +1,6 @@
 package com.event.Flowvent.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -98,6 +99,23 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 "Event already passed",
                 ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "This operation violates a database constraint";
+
+        if (ex.getMessage() != null && ex.getMessage().contains("uk_ticket_event_seat")) {
+            message = "This seat is already taken for this event";
+        }
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Data integrity violation",
+                message
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
