@@ -1,32 +1,28 @@
-import { FormEvent, useState } from 'react'
-import { getAuthenticatedUser, login } from '../api/authApi'
-import type { AuthUser } from '../types/auth'
+import { type FormEvent, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
   const [email, setEmail] = useState('client@flowvent.com')
-  const [password, setPassword] = useState('password123')
-  const [user, setUser] = useState<AuthUser | null>(null)
+  const [password, setPassword] = useState('client123')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const { login, user } = useAuth()
+  const navigate = useNavigate()
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
-    setLoading(true)
+    setSubmitting(true)
 
     try {
-      const authResponse = await login({ email, password })
-
-      localStorage.setItem('flowvent_token', authResponse.token)
-
-      const authenticatedUser = await getAuthenticatedUser()
-      setUser(authenticatedUser)
+      await login({ email, password })
+      navigate('/events')
     } catch {
       setError('Invalid email or password')
-      localStorage.removeItem('flowvent_token')
-      setUser(null)
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -36,40 +32,42 @@ export function LoginPage() {
         <p className="eyebrow">Welcome back</p>
         <h1>Login</h1>
 
-        <form className="form" onSubmit={handleSubmit}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="client@flowvent.com"
-            />
-          </label>
-
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="password123"
-            />
-          </label>
-
-          {error && <p className="error">{error}</p>}
-
-          <button className="button" type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
         {user && (
           <div className="successBox">
-            <strong>Logged in as {user.username}</strong>
+            <strong>You are already logged in as {user.username}</strong>
             <span>{user.email}</span>
             <span>Role: {user.role}</span>
           </div>
+        )}
+
+        {!user && (
+          <form className="form" onSubmit={handleSubmit}>
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="client@flowvent.com"
+              />
+            </label>
+
+            <label>
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="client123"
+              />
+            </label>
+
+            {error && <p className="error">{error}</p>}
+
+            <button className="button" type="submit" disabled={submitting}>
+              {submitting ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
         )}
       </section>
     </main>
