@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import { Navbar } from './components/Navbar'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -19,7 +20,14 @@ function App() {
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/my-tickets" element={<MyTicketsPage />} />
+        <Route
+          path="/my-tickets"
+          element={
+            <ProtectedRoute>
+              <MyTicketsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </div>
   )

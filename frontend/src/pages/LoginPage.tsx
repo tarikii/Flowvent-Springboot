@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
@@ -10,6 +10,11 @@ export function LoginPage() {
 
   const { login, user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const from =
+    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ??
+    '/events'
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -18,7 +23,7 @@ export function LoginPage() {
 
     try {
       await login({ email, password })
-      navigate('/events')
+      navigate(from, { replace: true })
     } catch {
       setError('Invalid email or password')
     } finally {
