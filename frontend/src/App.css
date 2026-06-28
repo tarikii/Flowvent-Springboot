@@ -422,3 +422,15 @@ h1 {
     flex-direction: column;
   }
 }
+
+.formHint {
+  margin: 20px 0 0;
+  color: #cbd5e1;
+  text-align: center;
+}
+
+.formHint a {
+  color: #7dd3fc;
+  font-weight: 800;
+  text-decoration: none;
+}

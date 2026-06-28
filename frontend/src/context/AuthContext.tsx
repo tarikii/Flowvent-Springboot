@@ -5,14 +5,15 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { getAuthenticatedUser, login as loginRequest } from '../api/authApi'
-import type { AuthUser, LoginRequest } from '../types/auth'
+import { getAuthenticatedUser, login as loginRequest, register as registerRequest } from '../api/authApi'
+import type { AuthUser, LoginRequest, RegisterRequest } from '../types/auth'
 
 interface AuthContextValue {
   user: AuthUser | null
   loading: boolean
   isAuthenticated: boolean
   login: (request: LoginRequest) => Promise<void>
+  register: (request: RegisterRequest) => Promise<void>
   logout: () => void
 }
 
@@ -56,6 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authenticatedUser)
   }
 
+  async function register(request: RegisterRequest) {
+    const authResponse = await registerRequest(request)
+
+    localStorage.setItem(TOKEN_KEY, authResponse.token)
+
+    const authenticatedUser = await getAuthenticatedUser()
+    setUser(authenticatedUser)
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY)
     setUser(null)
@@ -68,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         isAuthenticated: Boolean(user),
         login,
+        register,
         logout,
       }}
     >
