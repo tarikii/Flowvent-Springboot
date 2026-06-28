@@ -11,3 +11,10 @@ export function getEvents(page = 0, size = 6) {
 export function getEventById(id: number) {
   return apiRequest<Event>(`/events/${id}`)
 }
+
+export function createEvent(request: EventCreateRequest) {
+  return apiRequest<Event>('/events', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+}

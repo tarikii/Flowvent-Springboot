@@ -8,3 +8,11 @@ export interface Event {
   soldTickets: number
   availableTickets: number
 }
+
+export interface EventCreateRequest {
+  title: string
+  description: string
+  date: string
+  maximumCapacity: number
+  ticketPrice: number
+}

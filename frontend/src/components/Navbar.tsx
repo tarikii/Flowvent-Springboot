@@ -15,6 +15,8 @@ export function Navbar() {
 
         {isAuthenticated && <NavLink to="/my-tickets">My Tickets</NavLink>}
 
+        {user?.role === 'ADMIN' && <NavLink to="/admin/events">Admin</NavLink>}
+
         {!isAuthenticated && <NavLink to="/login">Login</NavLink>}
 
         {!isAuthenticated && (

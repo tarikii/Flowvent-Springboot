@@ -434,3 +434,59 @@ h1 {
   font-weight: 800;
   text-decoration: none;
 }
+
+.adminLayout {
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.adminEventsList {
+  display: grid;
+  gap: 16px;
+}
+
+.adminEventsList h2 {
+  margin: 0 0 8px;
+}
+
+.adminEventItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.adminEventItem h3 {
+  margin: 6px 0 0;
+}
+
+.adminEventItem div:last-child {
+  display: grid;
+  gap: 6px;
+  text-align: right;
+}
+
+.adminEventItem span {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .adminLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .adminEventItem {
+    display: grid;
+  }
+
+  .adminEventItem div:last-child {
+    text-align: left;
+  }
+}

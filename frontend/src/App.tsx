@@ -8,6 +8,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { EventsPage } from './pages/EventsPage'
 import { MyTicketsPage } from './pages/MyTicketsPage'
 import { EventDetailPage } from './pages/EventDetailPage'
+import { AdminEventsPage } from './pages/AdminEventsPage'
 
 function App() {
   return (
@@ -18,6 +19,14 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route
+          path="/admin/events"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminEventsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
