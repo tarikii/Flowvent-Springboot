@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getEvents } from '../api/apiEvents'
 import type { Event } from '../types/event'
+import { Link } from 'react-router-dom'
 
 export function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -61,9 +62,9 @@ export function EventsPage() {
 
               <div className="eventFooter">
                 <strong>{formatPrice(event.ticketPrice)}</strong>
-                <button className="button" type="button">
+                <Link className="button" to={`/events/${event.id}`}>
                   View event
-                </button>
+                </Link>
               </div>
             </article>
           ))}

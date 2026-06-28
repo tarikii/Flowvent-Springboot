@@ -1,5 +1,22 @@
 const API_BASE_URL = 'http://localhost:8081/api'
 
+interface ApiErrorResponse {
+  message?: string
+  error?: string
+  messages?: Record<string, string>
+}
+
+export class ApiError extends Error {
+  status: number
+  details?: ApiErrorResponse
+
+  constructor(status: number, message: string, details?: ApiErrorResponse) {
+    super(message)
+    this.status = status
+    this.details = details
+  }
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
@@ -16,7 +33,20 @@ export async function apiRequest<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`)
+    let errorBody: ApiErrorResponse | undefined
+
+    try {
+      errorBody = await response.json()
+    } catch {
+      errorBody = undefined
+    }
+
+    const message =
+      errorBody?.message ||
+      errorBody?.error ||
+      `Request failed with status ${response.status}`
+
+    throw new ApiError(response.status, message, errorBody)
   }
 
   return response.json() as Promise<T>

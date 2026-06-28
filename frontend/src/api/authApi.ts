@@ -1,4 +1,4 @@
-import { apiRequest } from './apiClient'
+import { apiRequest } from './apiClients'
 import type { AuthResponse, AuthUser, LoginRequest } from '../types/auth'
 
 export function login(request: LoginRequest) {
