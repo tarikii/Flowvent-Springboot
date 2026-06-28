@@ -18,3 +18,16 @@ export function createEvent(request: EventCreateRequest) {
     body: JSON.stringify(request),
   })
 }
+
+export function updateEvent(id: number, request: EventUpdateRequest) {
+  return apiRequest<Event>(`/events/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  })
+}
+
+export function deleteEvent(id: number) {
+  return apiRequest<void>(`/events/${id}`, {
+    method: 'DELETE',
+  })
+}

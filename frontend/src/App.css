@@ -490,3 +490,62 @@ h1 {
     text-align: left;
   }
 }
+
+.formTitleRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.formTitleRow h2 {
+  margin: 0;
+}
+
+.adminEventActions {
+  display: grid;
+  gap: 14px;
+  justify-items: end;
+}
+
+.adminItemActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dangerButton {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: rgba(239, 68, 68, 0.24);
+}
+
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.adminEventItem span {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .adminEventActions {
+    justify-items: start;
+  }
+
+  .adminItemActions {
+    justify-content: flex-start;
+  }
+}

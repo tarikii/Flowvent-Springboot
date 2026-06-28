@@ -16,3 +16,5 @@ export interface EventCreateRequest {
   maximumCapacity: number
   ticketPrice: number
 }
+
+export type EventUpdateRequest = EventCreateRequest

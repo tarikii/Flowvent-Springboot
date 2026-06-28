@@ -1,10 +1,12 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { ApiError } from '../api/apiClients'
-import { createEvent, getEvents } from '../api/apiEvents'
-import type { Event } from '../types/event'
+import { createEvent, getEvents, updateEvent, deleteEvent } from '../api/apiEvents'
+import type { Event, EventCreateRequest } from '../types/event'
 
 export function AdminEventsPage() {
   const [events, setEvents] = useState<Event[]>([])
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState('')
@@ -13,8 +15,11 @@ export function AdminEventsPage() {
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  const isEditing = selectedEventId !== null
 
   useEffect(() => {
     loadEvents()
@@ -64,33 +69,104 @@ export function AdminEventsPage() {
       return
     }
 
+    const request: EventCreateRequest = {
+      title: title.trim(),
+      description: description.trim(),
+      date,
+      maximumCapacity: parsedCapacity,
+      ticketPrice: parsedPrice,
+    }
+
     setSubmitting(true)
 
     try {
-      const createdEvent = await createEvent({
-        title: title.trim(),
-        description: description.trim(),
-        date,
-        maximumCapacity: parsedCapacity,
-        ticketPrice: parsedPrice,
-      })
+      if (isEditing && selectedEventId !== null) {
+        const updatedEvent = await updateEvent(selectedEventId, request)
 
-      setEvents((currentEvents) => [createdEvent, ...currentEvents])
-      setTitle('')
-      setDescription('')
-      setDate('')
-      setMaximumCapacity('')
-      setTicketPrice('')
-      setSuccess('Event created successfully.')
-    } catch (createError) {
-      if (createError instanceof ApiError) {
-        setError(getAdminEventErrorMessage(createError))
+        setEvents((currentEvents) =>
+          currentEvents.map((currentEvent) =>
+            currentEvent.id === updatedEvent.id ? updatedEvent : currentEvent,
+          ),
+        )
+
+        setSuccess('Event updated successfully.')
       } else {
-        setError('Could not create event. Please try again.')
+        const createdEvent = await createEvent(request)
+
+        setEvents((currentEvents) => [createdEvent, ...currentEvents])
+        setSuccess('Event created successfully.')
+      }
+
+      clearForm()
+    } catch (eventError) {
+      if (eventError instanceof ApiError) {
+        setError(getAdminEventErrorMessage(eventError))
+      } else {
+        setError('Could not save event. Please try again.')
       }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function startEditing(eventToEdit: Event) {
+    setSelectedEventId(eventToEdit.id)
+    setTitle(eventToEdit.title)
+    setDescription(eventToEdit.description)
+    setDate(eventToEdit.date)
+    setMaximumCapacity(String(eventToEdit.maximumCapacity))
+    setTicketPrice(String(eventToEdit.ticketPrice))
+    setError('')
+    setSuccess('')
+  }
+
+  function cancelEditing() {
+    clearForm()
+    setError('')
+    setSuccess('')
+  }
+
+  async function handleDelete(eventToDelete: Event) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${eventToDelete.title}"?`,
+    )
+
+    if (!confirmed) return
+
+    setError('')
+    setSuccess('')
+    setDeletingId(eventToDelete.id)
+
+    try {
+      await deleteEvent(eventToDelete.id)
+
+      setEvents((currentEvents) =>
+        currentEvents.filter((currentEvent) => currentEvent.id !== eventToDelete.id),
+      )
+
+      if (selectedEventId === eventToDelete.id) {
+        clearForm()
+      }
+
+      setSuccess('Event deleted successfully.')
+    } catch (deleteError) {
+      if (deleteError instanceof ApiError) {
+        setError(getDeleteEventErrorMessage(deleteError))
+      } else {
+        setError('Could not delete event. Please try again.')
+      }
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  function clearForm() {
+    setSelectedEventId(null)
+    setTitle('')
+    setDescription('')
+    setDate('')
+    setMaximumCapacity('')
+    setTicketPrice('')
   }
 
   return (
@@ -98,13 +174,26 @@ export function AdminEventsPage() {
       <section className="eventsHeader">
         <p className="eyebrow">Admin</p>
         <h1>Manage events</h1>
-        <p>Create new events that clients can discover and book.</p>
+        <p>Create, edit and delete events that clients can discover and book.</p>
       </section>
 
       <section className="adminLayout">
         <section className="panel formPanel">
-          <p className="eyebrow">New event</p>
-          <h2>Create event</h2>
+          <p className="eyebrow">{isEditing ? 'Edit event' : 'New event'}</p>
+
+          <div className="formTitleRow">
+            <h2>{isEditing ? 'Edit event' : 'Create event'}</h2>
+
+            {isEditing && (
+              <button
+                className="button secondary"
+                type="button"
+                onClick={cancelEditing}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
 
           <form className="form" onSubmit={handleSubmit}>
             <label>
@@ -168,7 +257,13 @@ export function AdminEventsPage() {
             )}
 
             <button className="button" type="submit" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Create event'}
+              {submitting
+                ? isEditing
+                  ? 'Saving...'
+                  : 'Creating...'
+                : isEditing
+                  ? 'Save changes'
+                  : 'Create event'}
             </button>
           </form>
         </section>
@@ -178,17 +273,45 @@ export function AdminEventsPage() {
 
           {loading && <p className="statusText">Loading events...</p>}
 
+          {!loading && events.length === 0 && (
+            <section className="panel">
+              <p>No events found.</p>
+            </section>
+          )}
+
           {!loading &&
-            events.map((event) => (
-              <article className="adminEventItem" key={event.id}>
+            events.map((adminEvent) => (
+              <article className="adminEventItem" key={adminEvent.id}>
                 <div>
-                  <p className="eventDate">{formatDate(event.date)}</p>
-                  <h3>{event.title}</h3>
+                  <p className="eventDate">{formatDate(adminEvent.date)}</p>
+                  <h3>{adminEvent.title}</h3>
+                  <span>
+                    {adminEvent.availableTickets} left · {adminEvent.soldTickets}{' '}
+                    sold
+                  </span>
                 </div>
 
-                <div>
-                  <strong>{formatPrice(event.ticketPrice)}</strong>
-                  <span>{event.availableTickets} left</span>
+                <div className="adminEventActions">
+                  <strong>{formatPrice(adminEvent.ticketPrice)}</strong>
+
+                  <div className="adminItemActions">
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => startEditing(adminEvent)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="dangerButton"
+                      type="button"
+                      disabled={deletingId === adminEvent.id}
+                      onClick={() => handleDelete(adminEvent)}
+                    >
+                      {deletingId === adminEvent.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
@@ -222,10 +345,22 @@ function getAdminEventErrorMessage(error: ApiError) {
   }
 
   if (error.status === 403) {
-    return 'Only administrators can create events.'
+    return 'Only administrators can manage events.'
   }
 
-  return 'Could not create event. Please check the form and try again.'
+  return 'Could not save event. Please check the form and try again.'
+}
+
+function getDeleteEventErrorMessage(error: ApiError) {
+  if (error.status === 403) {
+    return 'Only administrators can delete events.'
+  }
+
+  if (error.status === 409 || error.status === 500) {
+    return 'Could not delete this event. It may already have tickets linked to it.'
+  }
+
+  return 'Could not delete event. Please try again.'
 }
 
 function formatDate(date: string) {
