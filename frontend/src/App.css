@@ -580,3 +580,24 @@ h1 {
   background: rgba(20, 83, 45, 0.32);
   color: #bbf7d0;
 }
+
+.lockedHint {
+  display: inline-flex;
+  justify-self: end;
+  width: fit-content;
+  padding: 7px 11px;
+  border: 1px solid rgba(251, 191, 36, 0.32);
+  border-radius: 999px;
+  background: rgba(120, 53, 15, 0.32);
+  color: #fde68a;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: grayscale(0.4);
+}

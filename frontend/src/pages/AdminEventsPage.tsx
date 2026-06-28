@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiError } from '../api/apiClients'
 import { createEvent, getEvents, updateEvent, deleteEvent } from '../api/apiEvents'
 import type { Event, EventCreateRequest } from '../types/event'
@@ -127,6 +128,11 @@ export function AdminEventsPage() {
   }
 
   async function handleDelete(eventToDelete: Event) {
+      if (eventToDelete.soldTickets > 0) {
+        setError('This event cannot be deleted because it already has tickets sold.')
+        setSuccess('')
+        return
+      }
     const confirmed = window.confirm(
       `Are you sure you want to delete "${eventToDelete.title}"?`,
     )
@@ -299,7 +305,15 @@ export function AdminEventsPage() {
                 <div className="adminEventActions">
                   <strong>{formatPrice(adminEvent.ticketPrice)}</strong>
 
+                  {adminEvent.soldTickets > 0 && (
+                    <span className="lockedHint">Has sold tickets</span>
+                  )}
+
                   <div className="adminItemActions">
+                    <Link className="button secondary" to={`/events/${adminEvent.id}`}>
+                      View
+                    </Link>
+
                     <button
                       className="button secondary"
                       type="button"
@@ -311,7 +325,12 @@ export function AdminEventsPage() {
                     <button
                       className="dangerButton"
                       type="button"
-                      disabled={deletingId === adminEvent.id}
+                      disabled={deletingId === adminEvent.id || adminEvent.soldTickets > 0}
+                      title={
+                        adminEvent.soldTickets > 0
+                          ? 'Events with sold tickets cannot be deleted'
+                          : 'Delete event'
+                      }
                       onClick={() => handleDelete(adminEvent)}
                     >
                       {deletingId === adminEvent.id ? 'Deleting...' : 'Delete'}
