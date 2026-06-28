@@ -549,3 +549,34 @@ h1 {
     justify-content: flex-start;
   }
 }
+
+.adminAlert {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 24px;
+  padding: 18px 22px;
+  border-radius: 18px;
+  font-weight: 700;
+}
+
+.adminAlert strong {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.adminAlert span {
+  line-height: 1.5;
+}
+
+.errorAlert {
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+}
+
+.successAlert {
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  background: rgba(20, 83, 45, 0.32);
+  color: #bbf7d0;
+}

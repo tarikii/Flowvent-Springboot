@@ -3,6 +3,7 @@ package com.event.Flowvent.service;
 import com.event.Flowvent.dto.EventCreateDto;
 import com.event.Flowvent.dto.EventResponseDto;
 import com.event.Flowvent.entity.Event;
+import com.event.Flowvent.exception.EventHasTicketsException;
 import com.event.Flowvent.exception.EventNotFoundException;
 import com.event.Flowvent.repository.EventRepository;
 import com.event.Flowvent.repository.TicketRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -73,8 +75,17 @@ public class EventService {
         return mapToResponseDto(updatedEvent);
     }
 
+    @Transactional
     public void deleteEvent(Long id) {
-        Event event = findEventById(id);
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException(id));
+
+        long ticketsCount = ticketRepository.countByEventId(id);
+
+        if (ticketsCount > 0) {
+            throw new EventHasTicketsException(id, ticketsCount);
+        }
+
         eventRepository.delete(event);
     }
 

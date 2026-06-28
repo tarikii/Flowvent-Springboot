@@ -176,6 +176,19 @@ export function AdminEventsPage() {
         <h1>Manage events</h1>
         <p>Create, edit and delete events that clients can discover and book.</p>
       </section>
+      {error && (
+        <div className="adminAlert errorAlert">
+          <strong>Action failed</strong>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div className="adminAlert successAlert">
+          <strong>Success</strong>
+          <span>{success}</span>
+        </div>
+      )}
 
       <section className="adminLayout">
         <section className="panel formPanel">
@@ -247,14 +260,6 @@ export function AdminEventsPage() {
                 placeholder="49.99"
               />
             </label>
-
-            {error && <p className="error">{error}</p>}
-
-            {success && (
-              <div className="successBox">
-                <strong>{success}</strong>
-              </div>
-            )}
 
             <button className="button" type="submit" disabled={submitting}>
               {submitting
@@ -352,12 +357,18 @@ function getAdminEventErrorMessage(error: ApiError) {
 }
 
 function getDeleteEventErrorMessage(error: ApiError) {
+  const message = error.message.toLowerCase()
+
   if (error.status === 403) {
     return 'Only administrators can delete events.'
   }
 
-  if (error.status === 409 || error.status === 500) {
-    return 'Could not delete this event. It may already have tickets linked to it.'
+  if (
+    error.status === 409 ||
+    message.includes('has tickets') ||
+    message.includes('ticket')
+  ) {
+    return 'This event cannot be deleted because it already has tickets sold.'
   }
 
   return 'Could not delete event. Please try again.'
