@@ -927,3 +927,243 @@ h1 {
     display: grid;
   }
 }
+
+.skeletonCard {
+  min-height: 230px;
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.72);
+  overflow: hidden;
+}
+
+.skeletonLine,
+.skeletonPill,
+.skeletonButton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.skeletonLine::after,
+.skeletonPill::after,
+.skeletonButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  animation: skeleton-loading 1.4s infinite;
+}
+
+.skeletonLine {
+  height: 14px;
+  margin-bottom: 14px;
+}
+
+.skeletonLine.short {
+  width: 34%;
+}
+
+.skeletonLine.medium {
+  width: 62%;
+}
+
+.skeletonLine.title {
+  width: 76%;
+  height: 28px;
+  margin: 22px 0;
+}
+
+.skeletonFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-top: 38px;
+}
+
+.skeletonPill {
+  width: 120px;
+  height: 36px;
+}
+
+.skeletonButton {
+  width: 128px;
+  height: 48px;
+}
+
+@keyframes skeleton-loading {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Final responsive polish */
+
+@media (max-width: 900px) {
+  .navbar {
+    padding: 28px 24px;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .navbar nav {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .userNav {
+    flex-wrap: wrap;
+  }
+
+  .page {
+    padding: 32px 24px;
+  }
+
+  .eventsHeader h1,
+  .panel h1 {
+    font-size: clamp(2.6rem, 13vw, 4.5rem);
+  }
+
+  .eventsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .eventCard {
+    min-height: auto;
+  }
+
+  .eventFooter {
+    align-items: flex-start;
+  }
+
+  .filtersPanel {
+    padding: 20px;
+  }
+
+  .filtersActions .button,
+  .eventFooter .button,
+  .purchasePanel .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .adminLayout {
+    gap: 22px;
+  }
+
+  .adminEventItem {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    position: static;
+  }
+
+  .logo {
+    font-size: 0.95rem;
+  }
+
+  .navbar nav a,
+  .navButton,
+  .logoutButton {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .page {
+    padding: 26px 18px;
+  }
+
+  .homeHeroContent h1,
+  .eventsHeader h1,
+  .eventDetail h1 {
+    letter-spacing: -0.06em;
+  }
+
+  .homeHeroContent h1 {
+    font-size: clamp(2.8rem, 17vw, 4rem);
+  }
+
+  .heroText,
+  .eventDescription {
+    font-size: 1rem;
+  }
+
+  .actions {
+    display: grid;
+    width: 100%;
+  }
+
+  .actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .eventDetails {
+    gap: 8px;
+  }
+
+  .eventFooter {
+    display: grid;
+    gap: 18px;
+  }
+
+  .eventFooter strong {
+    font-size: 1.35rem;
+  }
+
+  .ticketInfo div {
+    width: 100%;
+  }
+
+  .purchasePanel {
+    padding: 22px;
+  }
+
+  .formTitleRow {
+    display: grid;
+  }
+
+  .adminItemActions {
+    display: grid;
+    width: 100%;
+  }
+
+  .adminItemActions .button,
+  .adminItemActions .dangerButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lockedHint {
+    justify-self: start;
+  }
+
+  .pagination {
+    width: 100%;
+  }
+
+  .pagination .button {
+    width: 100%;
+  }
+
+  .skeletonFooter {
+    display: grid;
+  }
+
+  .skeletonButton,
+  .skeletonPill {
+    width: 100%;
+  }
+}

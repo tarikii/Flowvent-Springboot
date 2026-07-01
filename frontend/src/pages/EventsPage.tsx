@@ -7,6 +7,7 @@ import {
 } from '../api/apiEvents'
 import type { Event } from '../types/event'
 import type { PageResponse } from '../types/page'
+import { SkeletonCards } from '../components/SkeletonCards'
 
 export function EventsPage() {
   const [eventPage, setEventPage] = useState<PageResponse<Event> | null>(null)
@@ -139,7 +140,7 @@ export function EventsPage() {
         </form>
       </section>
 
-      {loading && <p className="statusText">Loading events...</p>}
+      {loading && <SkeletonCards count={4} />}
 
       {error && <p className="error">{error}</p>}
 

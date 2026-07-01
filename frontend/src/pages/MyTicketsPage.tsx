@@ -4,6 +4,7 @@ import { getMyTickets } from '../api/apiTickets'
 import { useAuth } from '../context/AuthContext'
 import type { PageResponse } from '../types/page'
 import type { Ticket } from '../types/ticket'
+import { SkeletonCards } from '../components/SkeletonCards'
 
 export function MyTicketsPage() {
   const { isAuthenticated, loading: authLoading } = useAuth()
@@ -43,7 +44,13 @@ export function MyTicketsPage() {
   if (authLoading || loading) {
     return (
       <main className="page">
-        <p className="statusText">Loading your tickets...</p>
+        <section className="eventsHeader">
+          <p className="eyebrow">My Tickets</p>
+          <h1>Your purchased tickets</h1>
+          <p>Loading your tickets...</p>
+        </section>
+
+        <SkeletonCards count={3} variant="tickets" />
       </main>
     )
   }

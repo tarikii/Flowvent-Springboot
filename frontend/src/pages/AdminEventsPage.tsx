@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../api/apiClients'
 import { createEvent, getEvents, updateEvent, deleteEvent } from '../api/apiEvents'
 import type { Event, EventCreateRequest } from '../types/event'
+import { SkeletonCards } from '../components/SkeletonCards'
 
 export function AdminEventsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -282,7 +283,7 @@ export function AdminEventsPage() {
         <section className="adminEventsList">
           <h2>Latest events</h2>
 
-          {loading && <p className="statusText">Loading events...</p>}
+          {loading && <SkeletonCards count={4} variant="admin" />}
 
           {!loading && events.length === 0 && (
             <section className="panel">
